@@ -104,8 +104,7 @@ button:hover{filter:brightness(1.1)}
 <div id="stage" class="screen hidden" style="padding:0;justify-content:flex-start">
   <div id="prog"></div>
   <div id="ctrl">
-    <button id="pauseBtn" title="Pause / play">⏸</button>
-    <button id="muteBtn" title="Mute music">♪</button>
+    <button id="muteBtn" title="Music on / off">♪</button>
   </div>
   <div id="slides"></div>
   <div id="caption"></div>
@@ -201,8 +200,9 @@ const CONFIG = {
 
   // Optional soft background music (leave "" for none)
   music: "https://raw.githubusercontent.com/jamessytic/18thCaelum/main/BGMusic.mp3",
-  musicVolume: 0.2,   // background music (0 to 1), kept low so the voice stands out
-  voiceVolume: 1,     // your voice clips (0 to 1), 1 is the loudest
+  musicVolume: 0.15,  // background music (0 to 1), kept low so the voice stands out
+  voiceVolume: 1,     // text-to-speech volume (0 to 1), 1 is the loudest
+  voiceBoost: 2.6,    // extra loudness for your recorded voice clips (1 = normal, 2.6 = much louder)
 
   // Voice: pitch 0 (deepest) to 2. Used only when a slide has no audio file.
   // Very low pitch sounds robotic, so ~0.7 to 0.85 is the smooth-and-deep sweet spot.
@@ -249,9 +249,10 @@ function loadImage(src) {
     i.src = src;
   });
 }
-function loadAudio(src) {
+function loadAudio(src, cors) {
   return new Promise(res => {
     const a = new Audio();
+    if (cors) a.crossOrigin = "anonymous";
     let done = false;
     const finish = ok => { if (!done) { done = true; res(ok ? a : null); } };
     a.preload = "auto";
@@ -277,7 +278,7 @@ async function preload() {
 
   S.forEach((s, i) => {
     if (s.img) tasks.push(tick(loadImage(s.img)));
-    if (s.audio) tasks.push(tick(loadAudio(s.audio).then(a => { if (a) audioCache[i] = a; })));
+    if (s.audio) tasks.push(tick(loadAudio(s.audio, true).then(a => a ? (a.boostable = true, a) : loadAudio(s.audio)).then(a => { if (a) audioCache[i] = a; })));
   });
   if (CONFIG.music) tasks.push(tick(loadAudio(CONFIG.music).then(a => { if (a) { music = a; music.loop = true; music.volume = CONFIG.musicVolume; } })));
   if (document.fonts && document.fonts.ready) tasks.push(tick(document.fonts.ready.catch(() => {})));
@@ -289,6 +290,24 @@ async function preload() {
   $("loadTitle").textContent = "A letter for you, " + CONFIG.herName;
   $("loadText").textContent = "From " + CONFIG.yourName;
   $("enterBtn").classList.remove("hidden");
+}
+
+
+/* ---------- VOICE BOOST (louder than a normal volume slider allows) ---------- */
+let actx = null;
+function setupBoost() {
+  try {
+    actx = new (window.AudioContext || window.webkitAudioContext)();
+    const gain = actx.createGain();
+    gain.gain.value = CONFIG.voiceBoost;
+    const comp = actx.createDynamicsCompressor();   // keeps the louder voice from distorting
+    comp.threshold.value = -18; comp.ratio.value = 4;
+    gain.connect(comp); comp.connect(actx.destination);
+    Object.values(audioCache).forEach(a => {
+      if (a.boostable && !a.wired) { actx.createMediaElementSource(a).connect(gain); a.wired = true; }
+    });
+    if (actx.state === "suspended") actx.resume();
+  } catch (e) { /* falls back to normal volume */ }
 }
 
 /* ---------- VOICE ---------- */
@@ -526,6 +545,7 @@ $("enterBtn").onclick = () => {
   $("enterBtn").disabled = true;
   $("enterBtn").classList.add("hidden");
   if (music) { music.currentTime = 0; music.play().catch(() => {}); }  // must run inside the tap
+  setupBoost();
   $("env").classList.add("open");
   setTimeout(() => {
     $("loader").classList.add("hidden");
@@ -538,19 +558,6 @@ $("enterBtn").onclick = () => {
     introTimer = setTimeout(() => show(0), 5000);
   }, 1900);
 };
-$("pauseBtn").onclick = () => {
-  paused = !paused;
-  $("pauseBtn").textContent = paused ? "▶" : "⏸";
-  if (paused) {
-    if (currentAudio) currentAudio.pause();
-    if ("speechSynthesis" in window) speechSynthesis.pause();
-    clearTimeout(timer);
-  } else {
-    if (currentAudio) currentAudio.play();
-    else if ("speechSynthesis" in window && speechSynthesis.paused) speechSynthesis.resume();
-    else show(idx);
-  }
-};
 $("muteBtn").onclick = () => {
   if (!music) return;
   music.muted = !music.muted;
@@ -559,7 +566,7 @@ $("muteBtn").onclick = () => {
 $("replayBtn").onclick = () => {
   $("end").classList.add("hidden");
   $("stage").classList.remove("hidden");
-  paused = false; $("pauseBtn").textContent = "⏸";
+  paused = false;
   GF.start();
   show(0);
 };
