@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Happy 18th Monthsary</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital@0;1&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
+<style>
+:root{--fw:min(36vw,260px);--capH:clamp(140px,27vh,240px);--bg:#14070d;--fg:#fbe9ee;--accent:#ff4d79;--soft:#ffb3c6}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--fg);font-family:"Playfair Display",Georgia,serif;overflow:hidden}
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;transition:opacity .9s}
+.hidden{opacity:0;pointer-events:none}
+.script{font-family:"Dancing Script",cursive;font-size:clamp(2rem,7vw,3.6rem);color:var(--soft)}
+.heart{font-size:3.2rem;color:var(--accent);animation:beat 1.1s infinite}
+@keyframes beat{0%,100%{transform:scale(1)}30%{transform:scale(1.25)}60%{transform:scale(1.05)}}
+.bar{width:min(320px,70vw);height:6px;background:#3a1824;border-radius:6px;margin:22px 0 10px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--soft));transition:width .3s}
+.small{opacity:.7;font-size:.9rem}
+button{font:inherit;background:var(--accent);color:#fff;border:0;border-radius:40px;padding:14px 34px;font-size:1.1rem;cursor:pointer;margin-top:22px;box-shadow:0 6px 24px #ff4d7966}
+button:hover{filter:brightness(1.1)}
+#stage{background:#000}
+.slide{position:absolute;inset:0;opacity:0;transition:opacity 1.4s;background:radial-gradient(circle at 50% 40%,#5a1a32,#14070d);display:flex;align-items:center;justify-content:center;padding:6vh 22px calc(var(--capH) + 2vh)}
+.slide.on{opacity:1}
+.slide img{width:auto;height:auto;max-width:min(92vw,560px);max-height:100%;object-fit:cover;border-radius:28px;border:9px solid #fff;box-shadow:0 22px 60px #000b,0 0 45px #ff4d7955;transform:scale(.93) rotate(-1.5deg);transition:transform 9s cubic-bezier(.2,.6,.3,1)}
+.slide.on img{transform:scale(1) rotate(0)}
+#slides{position:absolute;inset:0}
+#caption{position:absolute;left:0;right:0;bottom:0;height:var(--capH);display:flex;align-items:center;justify-content:center;text-align:center;padding:10px var(--fw) 24px 24px;background:none;border:0;z-index:2;font-size:clamp(.95rem,3.1vw,1.35rem);line-height:1.5;font-style:italic;text-shadow:0 2px 10px #000;transition:opacity .6s}
+#ctrl{position:absolute;top:14px;right:14px;display:flex;gap:8px;z-index:5}
+#ctrl button{margin:0;padding:8px 14px;font-size:1rem;background:#0008;box-shadow:none;border:1px solid #fff3}
+#prog{position:absolute;top:0;left:0;height:3px;background:var(--accent);width:0;transition:width .5s;z-index:5}
+#hearts{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:1}
+#hearts span{position:absolute;bottom:-30px;color:var(--accent);opacity:.5;animation:rise linear forwards}
+@keyframes rise{to{transform:translateY(-110vh) rotate(25deg);opacity:0}}
+
+#flowers{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:3}
+#flowers::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 55%,#000b 100%)}
+.bloom{position:absolute;width:min(48vw,360px);aspect-ratio:1;opacity:0;filter:blur(1.2px) drop-shadow(0 0 22px #ff4d79aa);animation:bloomin 4s ease-out forwards,spin 90s linear infinite}
+.bloom.tl{top:-10vw;left:-10vw;--o:.42}
+.bloom.br{bottom:-12vw;right:-12vw;--o:.42;animation-direction:normal,reverse}
+.bloom.tr{top:-6vw;right:-4vw;width:min(26vw,190px);--o:.3;filter:blur(3px) drop-shadow(0 0 16px #ffb3c6aa)}
+.bloom.bl{bottom:-4vw;left:-3vw;width:min(24vw,170px);--o:.3;filter:blur(3px) drop-shadow(0 0 16px #ffb3c6aa)}
+@keyframes bloomin{from{opacity:0;scale:.4}to{opacity:var(--o);scale:1}}
+@keyframes spin{to{rotate:360deg}}
+.petal{position:absolute;top:-8vh;border-radius:150% 0 150% 0;background:linear-gradient(135deg,#ffe0e8,#ff6f9c);opacity:0;animation:fall linear infinite;box-shadow:0 0 10px #ff4d7966}
+@keyframes fall{0%{transform:translate3d(0,0,0) rotate(0);opacity:0}10%{opacity:.85}90%{opacity:.85}100%{transform:translate3d(var(--dx),112vh,0) rotate(var(--rot));opacity:0}}
+@media (prefers-reduced-motion:reduce){.petal{display:none}.bloom{animation:bloomin 4s forwards}}
+
+#growFlower{position:fixed;right:1vw;bottom:0;height:94vh;width:var(--fw);pointer-events:none;z-index:4;opacity:0;transition:opacity 1.2s;filter:drop-shadow(0 0 18px #ff4d7988)}
+#growFlower.on{opacity:1}
+#gfSway{transform-origin:50% 100%;animation:sway 7s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-1.2deg)}50%{transform:rotate(1.2deg)}}
+
+/* LETTER */
+.env{position:relative;width:min(300px,78vw);aspect-ratio:3/2;margin-bottom:30px;perspective:900px;animation:floaty 4s ease-in-out infinite;filter:drop-shadow(0 18px 28px #000a) drop-shadow(0 0 24px #ff4d7944)}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.env>*{position:absolute}
+.env-back{inset:0;background:#d98ca2;border-radius:8px}
+.paper{left:8%;right:8%;top:7%;bottom:7%;z-index:2;background:linear-gradient(#fffaf6,#ffeef1);border-radius:6px;display:flex;flex-direction:column;align-items:center;padding-top:9%;color:#b3375c;transition:transform 1s .55s ease}
+.paper b{font:600 clamp(1.2rem,5vw,1.6rem) "Dancing Script",cursive}
+.paper i{display:block;width:62%;height:3px;border-radius:3px;background:#f3c6d2;margin-top:9px}
+.env-front{inset:0;z-index:3;border-radius:8px;background:linear-gradient(160deg,#f7c9d6,#eea0b6);clip-path:polygon(0 0,50% 58%,100% 0,100% 100%,0 100%)}
+.env-flap{left:0;right:0;top:0;height:58%;z-index:4;background:linear-gradient(#f2a9bd,#e58aa6);clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top;transition:transform .7s ease}
+.seal{left:50%;top:58%;z-index:5;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff7a9f,#d61f55);color:#fff;font-size:1.5rem;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px #0007;animation:beat 1.2s infinite;transition:opacity .3s}
+.env.open{animation:none}
+.env.open .env-flap{transform:rotateX(180deg);z-index:1}
+.env.open .paper{transform:translateY(-58%)}
+.env.open .seal{opacity:0;animation:none}
+</style>
+</head>
+<body>
+
+<div id="hearts"></div>
+
+<!-- LOADING SCREEN -->
+<div id="loader" class="screen">
+  <div class="env" id="env">
+    <div class="env-back"></div>
+    <div class="paper"><b>For you</b><i></i><i></i><i style="width:40%"></i></div>
+    <div class="env-front"></div>
+    <div class="env-flap"></div>
+    <div class="seal">♥</div>
+  </div>
+  <p class="script" id="loadTitle">A letter is on its way…</p>
+  <div class="bar"><i id="barFill"></i></div>
+  <p class="small" id="loadText">Loading memories 0%</p>
+  <button id="enterBtn" class="hidden">Open Letter</button>
+</div>
+
+<!-- SLIDESHOW -->
+<div id="stage" class="screen hidden" style="padding:0;justify-content:flex-start">
+  <div id="prog"></div>
+  <div id="ctrl">
+    <button id="pauseBtn" title="Pause / play">⏸</button>
+    <button id="muteBtn" title="Mute music">♪</button>
+  </div>
+  <div id="slides"></div>
+  <div id="caption"></div>
+</div>
+
+<!-- ENDING -->
+<div id="end" class="screen hidden">
+  <div class="heart">♥</div>
+  <p class="script" id="endTitle"></p>
+  <p id="endText" style="max-width:520px;margin-top:14px;line-height:1.6"></p>
+  <button id="replayBtn">Watch again</button>
+</div>
+
+<!-- CINEMATIC FLOWERS -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <radialGradient id="pg" cx="50%" cy="80%" r="80%">
+      <stop offset="0" stop-color="#ff8fb1"/><stop offset="1" stop-color="#ffe3ec"/>
+    </radialGradient>
+    <symbol id="flower" viewBox="-50 -50 100 100">
+      <g fill="url(#pg)" fill-opacity=".9">
+        <ellipse cx="0" cy="-24" rx="13" ry="26"/>
+        <ellipse cx="0" cy="-24" rx="13" ry="26" transform="rotate(60)"/>
+        <ellipse cx="0" cy="-24" rx="13" ry="26" transform="rotate(120)"/>
+        <ellipse cx="0" cy="-24" rx="13" ry="26" transform="rotate(180)"/>
+        <ellipse cx="0" cy="-24" rx="13" ry="26" transform="rotate(240)"/>
+        <ellipse cx="0" cy="-24" rx="13" ry="26" transform="rotate(300)"/>
+      </g>
+      <circle r="7" fill="#ffd27a"/>
+    </symbol>
+  </defs>
+</svg>
+<div id="flowers">
+  <svg class="bloom tl" viewBox="-50 -50 100 100"><use href="#flower"/></svg>
+  <svg class="bloom br" viewBox="-50 -50 100 100"><use href="#flower"/></svg>
+  <svg class="bloom tr" viewBox="-50 -50 100 100"><use href="#flower"/></svg>
+  <svg class="bloom bl" viewBox="-50 -50 100 100"><use href="#flower"/></svg>
+</div>
+
+
+<!-- GROWING FLOWER -->
+<svg id="growFlower" viewBox="0 0 260 700" preserveAspectRatio="xMaxYMax meet" aria-hidden="true">
+  <defs>
+    <linearGradient id="stemG" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#2d7a4b"/><stop offset="1" stop-color="#6fcf8f"/></linearGradient>
+    <linearGradient id="leafG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2f8a55"/><stop offset="1" stop-color="#7ddc9c"/></linearGradient>
+    <linearGradient id="petalG" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff5c8d"/><stop offset=".6" stop-color="#ff9cbb"/><stop offset="1" stop-color="#ffe0ea"/></linearGradient>
+    <linearGradient id="petalB" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#d93a6e"/><stop offset="1" stop-color="#ff8fb1"/></linearGradient>
+    <radialGradient id="coreG"><stop offset="0" stop-color="#fff2b0"/><stop offset="1" stop-color="#ffb347"/></radialGradient>
+  </defs>
+  <g id="gfSway">
+    <path id="gfStem" d="M130,700 C130,610 80,550 108,450 S160,310 130,175" fill="none" stroke="url(#stemG)" stroke-width="7" stroke-linecap="round"/>
+    <g id="gfLeaves"></g>
+    <g id="gfBloom">
+      <g id="gfBack"></g>
+      <g id="gfFront"></g>
+      <g id="gfCore"></g>
+    </g>
+  </g>
+</svg>
+
+<script>
+/* ---------- FALLING PETALS ---------- */
+(function () {
+  const layer = document.getElementById("flowers");
+  const n = innerWidth < 600 ? 16 : 28;
+  for (let i = 0; i < n; i++) {
+    const p = document.createElement("i");
+    const size = 8 + Math.random() * 18;
+    p.className = "petal";
+    p.style.width = size + "px";
+    p.style.height = size * 0.75 + "px";
+    p.style.left = Math.random() * 100 + "vw";
+    p.style.filter = "blur(" + (size > 19 ? 2.5 : size < 11 ? 1.2 : 0) + "px)";
+    p.style.animationDuration = 10 + Math.random() * 12 + "s";
+    p.style.animationDelay = -Math.random() * 22 + "s";
+    p.style.setProperty("--dx", (Math.random() * 40 - 15) + "vw");
+    p.style.setProperty("--rot", (360 + Math.random() * 540) + "deg");
+    layer.appendChild(p);
+  }
+})();
+</script>
+
+<script>
+/* =========================================================
+   EDIT THIS PART  –  everything else works automatically
+   ========================================================= */
+const CONFIG = {
+  herName: "My Caelum",
+  yourName: "your Zephyr",
+  endTitle: "Happy 18th Monthsary baby ko!",
+  endText: "Eighteen months down, and I would choose you in every one of them. I love you. (Made by Zephyr)",
+
+  // Optional soft background music (leave "" for none)
+  music: "https://raw.githubusercontent.com/jamessytic/18thCaelum/main/BGMusic.mp3",
+  musicVolume: 0.2,   // background music (0 to 1), kept low so the voice stands out
+  voiceVolume: 1,     // your voice clips (0 to 1), 1 is the loudest
+
+  // Voice: pitch 0 (deepest) to 2. Used only when a slide has no audio file.
+  // Very low pitch sounds robotic, so ~0.7 to 0.85 is the smooth-and-deep sweet spot.
+  voicePitch: 0.75,
+  voiceRate: 0.88,
+  // Optional: force a specific voice by name, e.g. "Microsoft Guy Online (Natural)" or "Daniel"
+  voiceName: "",
+
+  // Each slide: photo + what the voice says.
+  // "audio" is OPTIONAL: your own recorded voice file for that slide.
+  // If you leave audio out, the browser's deep text-to-speech reads the "text".
+  slides: [
+    { img: "https://raw.githubusercontent.com/jamessytic/18thCaelum/main/image1.jpeg", audio: "https://raw.githubusercontent.com/jamessytic/18thCaelum/main/1.mp3", text: "Hi love, Eighteen months ago, I didn’t know how much my life was about to change. And today, I just want to say thank you, for every single day since." },
+    { img: "https://raw.githubusercontent.com/jamessytic/18thCaelum/main/image2.jpeg", audio: "https://raw.githubusercontent.com/jamessytic/18thCaelum/main/2.mp3", text: "Every day with you feels like my favorite memory. Even the simple ones, like riding motorcycle together. Those are the moments I treasure most." },
+    { img: "https://raw.githubusercontent.com/jamessytic/18thCaelum/main/image3.jpeg", audio: "https://raw.githubusercontent.com/jamessytic/18thCaelum/main/3.mp3", text: "You have a way of making the ordinary feel special. Your smile, your laugh, the way you kiss and hug me. You make me happier than I ever knew I could be." },
+    { img: "https://raw.githubusercontent.com/jamessytic/18thCaelum/main/image4.jpeg", audio: "https://raw.githubusercontent.com/jamessytic/18thCaelum/main/4.mp3", text: "Thank you for staying, even on the days I wasn’t easy to love. Thank you for your patience, your kindness, and for believing in me. I’m a better person because of you." },
+    { img: "https://raw.githubusercontent.com/jamessytic/18thCaelum/main/image5.jpeg", audio: "https://raw.githubusercontent.com/jamessytic/18thCaelum/main/5.mp3", text: "maraming salamat po sa lahat lahat love, more months and years to come pa po." }
+  ]
+};
+/* ========================================================= */
+
+const $ = id => document.getElementById(id);
+const S = CONFIG.slides;
+const audioCache = {};   // slide index -> Audio element (only if it loaded)
+let music = null;
+
+// floating hearts
+setInterval(() => {
+  const h = document.createElement("span");
+  h.textContent = "♥";
+  h.style.left = Math.random() * 100 + "vw";
+  h.style.fontSize = 10 + Math.random() * 22 + "px";
+  h.style.animationDuration = 6 + Math.random() * 6 + "s";
+  $("hearts").appendChild(h);
+  setTimeout(() => h.remove(), 12000);
+}, 700);
+
+/* ---------- PRELOADER ---------- */
+function loadImage(src) {
+  return new Promise(res => {
+    const i = new Image();
+    i.onload = () => res(true);
+    i.onerror = () => res(false);
+    i.src = src;
+  });
+}
+function loadAudio(src) {
+  return new Promise(res => {
+    const a = new Audio();
+    let done = false;
+    const finish = ok => { if (!done) { done = true; res(ok ? a : null); } };
+    a.preload = "auto";
+    a.addEventListener("canplaythrough", () => finish(true), { once: true });
+    a.addEventListener("error", () => finish(false), { once: true });
+    setTimeout(() => finish(a.readyState >= 3), 20000); // safety timeout
+    a.src = src;
+    a.load();
+  });
+}
+
+async function preload() {
+  const tasks = [];
+  let done = 0;
+  const total = () => tasks.length;
+  const tick = p => p.then(r => {
+    done++;
+    const pct = Math.round(done / total() * 100);
+    $("barFill").style.width = pct + "%";
+    $("loadText").textContent = "Loading memories " + pct + "%";
+    return r;
+  });
+
+  S.forEach((s, i) => {
+    if (s.img) tasks.push(tick(loadImage(s.img)));
+    if (s.audio) tasks.push(tick(loadAudio(s.audio).then(a => { if (a) audioCache[i] = a; })));
+  });
+  if (CONFIG.music) tasks.push(tick(loadAudio(CONFIG.music).then(a => { if (a) { music = a; music.loop = true; music.volume = CONFIG.musicVolume; } })));
+  if (document.fonts && document.fonts.ready) tasks.push(tick(document.fonts.ready.catch(() => {})));
+
+  if (!tasks.length) { $("barFill").style.width = "100%"; }
+  await Promise.all(tasks);
+
+  $("barFill").style.width = "100%";
+  $("loadTitle").textContent = "A letter for you, " + CONFIG.herName;
+  $("loadText").textContent = "From " + CONFIG.yourName;
+  $("enterBtn").classList.remove("hidden");
+}
+
+/* ---------- VOICE ---------- */
+let voice = null;
+function pickVoice() {
+  const vs = speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang));
+  const byName = n => vs.find(v => v.name.toLowerCase().includes(n.toLowerCase()));
+  voice = (CONFIG.voiceName && byName(CONFIG.voiceName))
+    // best first: neural "Natural" voices (Edge/Windows), then good Apple and Google male voices
+    || vs.find(v => /natural/i.test(v.name) && /(guy|davis|christopher|eric|brian|andrew|ryan|roger|steffan)/i.test(v.name))
+    || byName("Daniel") || byName("Aaron") || byName("Evan") || byName("Google UK English Male")
+    || vs.find(v => /(david|mark|george|james|alex|fred)/i.test(v.name))
+    || vs[0] || null;
+}
+if ("speechSynthesis" in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+
+/* ---------- PLAYER ---------- */
+let introTimer = null, idx = 0, paused = false, token = 0, currentAudio = null, timer = null;
+
+function build() {
+  $("slides").innerHTML = "";
+  S.forEach(s => {
+    const d = document.createElement("div");
+    d.className = "slide";
+    const im = document.createElement("img");
+    im.src = s.img || "";
+    im.alt = "";
+    im.onerror = () => im.remove(); // missing photo -> gradient background stays
+    d.appendChild(im);
+    $("slides").appendChild(d);
+  });
+}
+
+function stopVoice() {
+  clearTimeout(timer);
+  if (currentAudio) { currentAudio.pause(); currentAudio.onended = null; currentAudio = null; }
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+}
+
+function speak(i, my, onDone) {
+  const s = S[i];
+  const gap = () => { timer = setTimeout(() => my === token && onDone(), 1400); };
+
+  if (audioCache[i]) {                       // your recorded voice
+    currentAudio = audioCache[i];
+    currentAudio.currentTime = 0;
+    currentAudio.volume = CONFIG.voiceVolume;
+    currentAudio.onended = gap;
+    currentAudio.play().catch(gap);
+    return;
+  }
+  if ("speechSynthesis" in window && s.text) { // deep text-to-speech
+    const u = new SpeechSynthesisUtterance(s.text);
+    u.volume = CONFIG.voiceVolume;
+    u.pitch = CONFIG.voicePitch; u.rate = CONFIG.voiceRate;
+    if (voice) u.voice = voice;
+    u.onend = gap; u.onerror = gap;
+    speechSynthesis.speak(u);
+    return;
+  }
+  timer = setTimeout(() => my === token && onDone(), Math.max(4000, (s.text || "").length * 70));
+}
+
+function show(i) {
+  const my = ++token;
+  stopVoice();
+  idx = i;
+  document.querySelectorAll(".slide").forEach((el, n) => el.classList.toggle("on", n === i));
+  $("prog").style.width = ((i + 1) / S.length * 100) + "%";
+  setGrowTarget(i);
+  const cap = $("caption");
+  cap.style.opacity = 0;
+  setTimeout(() => { if (my === token) { cap.textContent = S[i].text || ""; cap.style.opacity = 1; } }, 500);
+  setTimeout(() => {
+    if (my !== token || paused) return;
+    speak(i, my, () => (i + 1 < S.length ? show(i + 1) : finish()));
+  }, 900);
+}
+
+function finish() {
+  stopVoice();
+  $("endTitle").textContent = CONFIG.endTitle;
+  $("endText").textContent = CONFIG.endText;
+  $("stage").classList.add("hidden");
+  $("end").classList.remove("hidden");
+}
+
+
+/* ---------- GROWING FLOWER ---------- */
+const GF = (() => {
+  const NS = "http://www.w3.org/2000/svg";
+  const stem = $("gfStem"), bloom = $("gfBloom");
+  const total = stem.getTotalLength();
+  const PETAL = "M0,0 C-17,-14 -20,-46 0,-66 C20,-46 17,-14 0,0Z";
+  const LEAF = "M0,0 C22,-20 60,-22 84,-4 C60,14 22,16 0,0Z";
+  const mk = (tag, attrs, parent) => {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    parent.appendChild(e); return e;
+  };
+  stem.style.strokeDasharray = total;
+
+  // leaves along the stem
+  const leaves = [[.22,1],[.38,-1],[.55,1],[.7,-1]].map(([at, side]) => {
+    const pt = stem.getPointAtLength(total * at);
+    const g = mk("g", {}, $("gfLeaves"));
+    const inner = mk("g", {}, g);
+    mk("path", { d: LEAF, fill: "url(#leafG)" }, inner);
+    mk("path", { d: "M2,0 C30,-4 55,-5 76,-3", stroke: "#b9f0cb", "stroke-width": "1.2", fill: "none", opacity: ".6" }, inner);
+    return { g, inner, pt, at, side };
+  });
+
+  // petals
+  const back = [], front = [];
+  const N = 7;
+  for (let i = 0; i < N; i++) {
+    const t = i / (N - 1) - 0.5;                 // -0.5 .. 0.5
+    back.push({ t, el: mk("path", { d: PETAL, fill: "url(#petalB)", opacity: ".95" }, $("gfBack")) });
+  }
+  for (let i = 0; i < N - 1; i++) {
+    const t = (i + 0.5) / (N - 1) - 0.5;
+    front.push({ t, el: mk("path", { d: PETAL, fill: "url(#petalG)", stroke: "#ffd0df", "stroke-width": ".6" }, $("gfFront")) });
+  }
+  const core = mk("circle", { r: 7, cy: -4, fill: "url(#coreG)" }, $("gfCore"));
+  const dots = [];
+  for (let i = 0; i < 6; i++) dots.push(mk("circle", { r: 2.2, fill: "#ffd27a" }, $("gfCore")));
+
+  const clamp = x => Math.max(0, Math.min(1, x));
+  const smooth = x => x * x * (3 - 2 * x);
+  let g = 0, target = 0, last = 0, raf = 0;
+
+  function render() {
+    stem.style.strokeDashoffset = total * (1 - clamp(g));
+    const tip = stem.getPointAtLength(total * clamp(g));
+
+    leaves.forEach(l => {
+      const k = smooth(clamp((g - l.at) / 0.16));
+      l.g.setAttribute("transform", `translate(${l.pt.x},${l.pt.y})`);
+      l.inner.setAttribute("transform", `scale(${l.side * k},${k}) rotate(${-28 + (1 - k) * 40})`);
+      l.g.style.opacity = k ? 1 : 0;
+    });
+
+    // bud forms near the tip, then opens
+    const grow = smooth(clamp((g - 0.35) / 0.4));     // bud size
+    const open = smooth(clamp((g - 0.72) / 0.28));    // 0 closed .. 1 fully open
+    const size = 0.25 + 0.75 * grow;
+    bloom.setAttribute("transform", `translate(${tip.x},${tip.y}) scale(${size})`);
+    bloom.style.opacity = g > 0.34 ? 1 : 0;
+
+    const spread = 150 * (0.12 + 0.88 * open);        // fan width in degrees
+    back.forEach(p => p.el.setAttribute("transform",
+      `rotate(${p.t * spread * 1.15}) scale(${0.85 + 0.2 * open})`));
+    front.forEach(p => p.el.setAttribute("transform",
+      `rotate(${p.t * spread * 0.9}) scale(${0.7 + 0.3 * open})`));
+    const cOp = clamp((open - 0.3) / 0.5);
+    core.setAttribute("opacity", cOp);
+    dots.forEach((d, i) => {
+      const a = (i / 6) * Math.PI * 2;
+      d.setAttribute("cx", Math.cos(a) * 14 * open);
+      d.setAttribute("cy", -4 + Math.sin(a) * 9 * open);
+      d.setAttribute("opacity", cOp);
+    });
+  }
+
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000 || 0.016);
+    last = now;
+    const diff = target - g;
+    g += Math.sign(diff) * Math.min(Math.abs(diff), Math.max(Math.abs(diff) * 0.18, 0.012) * dt * 2);
+    render();
+    raf = requestAnimationFrame(frame);
+  }
+
+  return {
+    start() {
+      g = 0; target = 0.12; last = performance.now();
+      $("growFlower").classList.add("on");
+      render();
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(frame);
+    },
+    set(p) { target = clamp(p); }
+  };
+})();
+
+// flower keeps growing as the slideshow moves forward
+function setGrowTarget(i) { GF.set(0.12 + 0.88 * (i + 1) / S.length); }
+
+/* ---------- BUTTONS ---------- */
+$("enterBtn").onclick = () => {
+  $("enterBtn").disabled = true;
+  $("enterBtn").classList.add("hidden");
+  if (music) { music.currentTime = 0; music.play().catch(() => {}); }  // must run inside the tap
+  $("env").classList.add("open");
+  setTimeout(() => {
+    $("loader").classList.add("hidden");
+    $("stage").classList.remove("hidden");
+    build();
+    GF.start();
+    $("caption").textContent = "";
+    // let the music play alone for 5 seconds, then begin the slideshow
+    clearTimeout(introTimer);
+    introTimer = setTimeout(() => show(0), 5000);
+  }, 1900);
+};
+$("pauseBtn").onclick = () => {
+  paused = !paused;
+  $("pauseBtn").textContent = paused ? "▶" : "⏸";
+  if (paused) {
+    if (currentAudio) currentAudio.pause();
+    if ("speechSynthesis" in window) speechSynthesis.pause();
+    clearTimeout(timer);
+  } else {
+    if (currentAudio) currentAudio.play();
+    else if ("speechSynthesis" in window && speechSynthesis.paused) speechSynthesis.resume();
+    else show(idx);
+  }
+};
+$("muteBtn").onclick = () => {
+  if (!music) return;
+  music.muted = !music.muted;
+  $("muteBtn").style.opacity = music.muted ? .4 : 1;
+};
+$("replayBtn").onclick = () => {
+  $("end").classList.add("hidden");
+  $("stage").classList.remove("hidden");
+  paused = false; $("pauseBtn").textContent = "⏸";
+  GF.start();
+  show(0);
+};
+
+preload();
+</script>
+</body>
+</html>
