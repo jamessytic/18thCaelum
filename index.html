@@ -66,6 +66,19 @@ button:hover{filter:brightness(1.1)}
 .env.open .env-flap{transform:rotateX(180deg);z-index:1}
 .env.open .paper{transform:translateY(-58%)}
 .env.open .seal{opacity:0;animation:none}
+
+/* PHOTOCARD STRING */
+.strip{width:100vw;margin:0 -24px 14px;overflow:hidden;padding-bottom:10px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.track{display:flex;width:max-content;animation:marquee var(--dur,60s) linear infinite;will-change:transform}
+@keyframes marquee{to{transform:translateX(-50%)}}
+.pc{--w:clamp(86px,22vw,130px);flex:none;width:calc(var(--w) + 34px);position:relative;padding-top:16px;display:flex;justify-content:center}
+.pc::before{content:"";position:absolute;top:0;left:0;right:0;height:16px;border-bottom:2px solid #ffd9e2;border-radius:0 0 50% 50%/0 0 100% 100%;opacity:.9}
+.card{position:relative;margin-top:4px;width:var(--w);background:#fff;padding:6px 6px 22px;border-radius:6px;box-shadow:0 8px 18px #0009;transform-origin:50% -8px;transform:rotate(var(--r));animation:sway 5s ease-in-out infinite;animation-delay:var(--d)}
+.card::after{content:"";position:absolute;top:-9px;left:50%;margin-left:-4px;width:8px;height:17px;border-radius:3px;background:linear-gradient(#ffc2d2,#ff6f9c);box-shadow:0 2px 4px #0006}
+.card img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:3px}
+.card span{position:absolute;left:0;right:0;bottom:3px;text-align:center;color:#ff4d79;font-size:.8rem;line-height:1}
+@keyframes sway{0%,100%{transform:rotate(calc(var(--r) - 2.5deg))}50%{transform:rotate(calc(var(--r) + 2.5deg))}}
+@media (prefers-reduced-motion:reduce){.card{animation:none}}
 </style>
 </head>
 <body>
@@ -100,6 +113,7 @@ button:hover{filter:brightness(1.1)}
 
 <!-- ENDING -->
 <div id="end" class="screen hidden">
+  <div class="strip" id="strip"><div class="track" id="track"></div></div>
   <div class="heart">♥</div>
   <p class="script" id="endTitle"></p>
   <p id="endText" style="max-width:520px;margin-top:14px;line-height:1.6"></p>
@@ -183,7 +197,7 @@ const CONFIG = {
   herName: "My Caelum",
   yourName: "your Zephyr",
   endTitle: "Happy 18th Monthsary baby ko!",
-  endText: "Eighteen months down, and I would choose you in every one of them. I love you. (Made by Zephyr)",
+  endText: "Eighteen months down, and I would choose you in every one of them. I love you.",
 
   // Optional soft background music (leave "" for none)
   music: "https://raw.githubusercontent.com/jamessytic/18thCaelum/main/BGMusic.mp3",
@@ -354,12 +368,56 @@ function show(i) {
   }, 900);
 }
 
+
+/* ---------- PHOTOCARD STRING (ending) ---------- */
+let stripBuilt = false;
+function buildStrip() {
+  const track = $("track");
+  const tilts = [-4, 3, -2, 4, -3];
+  const half = document.createElement("div");
+  half.style.display = "flex";
+  let n = 0;
+  for (let rep = 0; rep < 3; rep++) {
+    S.forEach(s => {
+      if (!s.img) return;
+      const pc = document.createElement("div");
+      pc.className = "pc";
+      const card = document.createElement("div");
+      card.className = "card";
+      card.style.setProperty("--r", tilts[n % tilts.length] + "deg");
+      card.style.setProperty("--d", (-(n % 5) * 0.9) + "s");
+      const im = document.createElement("img");
+      im.src = s.img; im.alt = "";
+      im.onerror = () => pc.remove();
+      const h = document.createElement("span");
+      h.textContent = "♥";
+      card.append(im, h);
+      pc.appendChild(card);
+      half.appendChild(pc);
+      n++;
+    });
+  }
+  track.appendChild(half);
+  track.appendChild(half.cloneNode(true));   // second copy makes the loop seamless
+  stripBuilt = true;
+}
+function startStrip() {
+  if (!stripBuilt) buildStrip();
+  const track = $("track");
+  track.style.animation = "none";
+  void track.offsetWidth;
+  const dur = Math.max(20, (track.scrollWidth / 2) / 55);   // ~55px per second
+  track.style.setProperty("--dur", dur + "s");
+  track.style.animation = "";
+}
+
 function finish() {
   stopVoice();
   $("endTitle").textContent = CONFIG.endTitle;
   $("endText").textContent = CONFIG.endText;
   $("stage").classList.add("hidden");
   $("end").classList.remove("hidden");
+  requestAnimationFrame(startStrip);
 }
 
 
